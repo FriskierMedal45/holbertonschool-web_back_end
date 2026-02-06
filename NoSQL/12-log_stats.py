@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
-""" Nginx log stats """
-
+""" nginx logs statistics """
 from pymongo import MongoClient
 
+def count(coll, method):
+    """ gormursen documenti count da """
+    res = coll.count_documents({"method": method})
+    return res
+
 if __name__ == "__main__":
-    client = MongoClient()
-    collection = client.logs.nginx
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    nginx_collection = client.logs.nginx
 
-    print("{} logs".format(collection.count()))
-
+    print(f"{nginx_collection.count_documents({})} logs")
     print("Methods:")
-    print("\tmethod GET: {}".format(collection.find({"method": "GET"}).count()))
-    print("\tmethod POST: {}".format(collection.find({"method": "POST"}).count()))
-    print("\tmethod PUT: {}".format(collection.find({"method": "PUT"}).count()))
-    print("\tmethod PATCH: {}".format(collection.find({"method": "PATCH"}).count()))
-    print("\tmethod DELETE: {}".format(collection.find({"method": "DELETE"}).count()))
-
-    print("{} status check".format(
-        collection.find({
-            "method": "GET",
-            "path": "/status"
-        }).count()
-    ))
+    for i in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
+        print(f"	method {i}: {count(nginx_collection, i)}")
+    print("{} status check".format(nginx_collection.count_documents({"path": "/status"})))
